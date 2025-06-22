@@ -50,6 +50,11 @@ parser.add_argument(
     default='wd14-convnextv2.v1',
     metavar='MODELNAME',
     help='modelname to use for prediction (default is wd14-convnextv2.v1)')
+parser.add_argument(
+    '--append_tag',
+    default='',
+    help='Append tag')
+
 args = parser.parse_args()
 
 # get interrogator configs
@@ -111,8 +116,13 @@ if args.dir:
         print('processing:', image_path)
         tags = image_interrogate(image_path, not args.rawtag, parse_exclude_tags())
 
-        tags_str = ', '.join(tags.keys())
+        tags_str = ''
 
+        if args.append_tag:
+            tags_str = args.append_tag + ','
+
+        tags_str = tags_str + ', '.join(tags.keys())
+        
         with open(caption_path, 'w') as fp:
             fp.write(tags_str)
 

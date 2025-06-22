@@ -28,6 +28,7 @@ options:
   --exclude-tag t1,t2,t3
                         Specify tags to exclude (Need comma-separated list)
   --model MODELNAME     modelname to use for prediction (default is wd14-convnextv2.v1)
+  --append_tag t1,t2,t3 add to head of caption file
 ```
 
 single file
