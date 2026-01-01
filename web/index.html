@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>wd14-tagger-standalone WebUI</title>
+<style>
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",Arial;margin:24px;max-width:980px}
+.card{border:1px solid #ddd;border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+input[type="text"],input[type="number"]{padding:10px 12px;border-radius:10px;border:1px solid #ccc;min-width:320px}
+button{padding:10px 14px;border-radius:10px;border:1px solid #333;background:#fff;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+pre{background:#0b1020;color:#d7e1ff;padding:12px;border-radius:12px;overflow:auto}
+textarea{width:100%;min-height:160px;border-radius:12px;border:1px solid #ccc;padding:10px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.muted{color:#666;font-size:13px}
+</style>
+</head>
+<body>
+<h2>wd14-tagger-standalone WebUI</h2>
+<div class="card">
+<h3>上傳圖片（多張）</h3>
+<div class="row">
+<input id="files" type="file" multiple accept=".png,.jpg,.jpeg,.webp,.bmp"/>
+<label>threshold <input id="thr1" type="number" step="0.01" value="0.35" style="min-width:120px"></label>
+<button id="btnUpload">開始標註</button>
+</div>
+</div>
+<div class="card">
+<h3>批次資料夾</h3>
+<div class="row">
+<input id="folder" type="text" placeholder="/path/to/images"/>
+<label>threshold <input id="thr2" type="number" step="0.01" value="0.35" style="min-width:120px"></label>
+<button id="btnFolder">開始標註</button>
+</div>
+</div>
+<div class="card">
+<h3>附加標籤</h3>
+<div class="row">
+<input id="appendtag" type="text"/>
+</div>
+</div>
+<div class="card">
+<h3>結果</h3>
+<div class="row">
+<button id="btnZip" disabled>下載 result</button>
+<span id="job"></span>
+</div>
+<h4>Log</h4>
+<pre id="log"></pre>
+<h4>Captions（JSON）</h4>
+<textarea id="out"></textarea>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+function setBusy(b){$("btnUpload").disabled=b;$("btnFolder").disabled=b;}
+async function handleResp(resp){
+ const data=await resp.json();
+ $("log").textContent=data.log||"";
+ $("out").value=JSON.stringify(data.captions||{},null,2);
+ if(data.job_id){$("job").textContent="job_id: "+data.job_id;$("btnZip").disabled=false;$("btnZip").onclick=()=>{window.location="/api/download_zip/"+data.job_id;};}
+ if(!data.ok) alert(data.error||("Error, returncode="+data.returncode));
+}
+$("btnUpload").onclick=async()=>{
+ const files=$("files").files; if(!files||files.length===0) return alert("請選擇圖片");
+ setBusy(true);
+ try{
+  const fd=new FormData();
+  for(const f of files) fd.append("files",f);
+  fd.append("threshold",$("thr1").value);
+  fd.append("append_tag",$("appendtag").value);
+  await handleResp(await fetch("/api/tag_upload",{method:"POST",body:fd}));
+ }finally{setBusy(false);}
+};
+$("btnFolder").onclick=async()=>{
+ const folder=$("folder").value.trim(); if(!folder) return alert("請輸入資料夾路徑");
+ setBusy(true);
+ try{
+  const fd=new FormData();
+  fd.append("folder_path",folder);
+  fd.append("threshold",$("thr2").value);
+  fd.append("append_tag",$("appendtag").value);
+  await handleResp(await fetch("/api/tag_folder",{method:"POST",body:fd}));
+ }finally{setBusy(false);}
+};
+</script>
+</body>
+</html>

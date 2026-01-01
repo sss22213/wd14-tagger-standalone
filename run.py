@@ -112,10 +112,12 @@ if args.dir:
             # skip if caption exists
             print('skip:', image_path)
             continue
+        try:
+            print('processing:', str(image_path))
+        except:
+            pass
 
-        print('processing:', image_path)
         tags = image_interrogate(image_path, not args.rawtag, parse_exclude_tags())
-
         tags_str = ''
 
         if args.append_tag:

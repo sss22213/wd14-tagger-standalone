@@ -1,7 +1,7 @@
 
 forked from [https://github.com/picobyte/stable-diffusion-webui-wd14-tagger](https://github.com/picobyte/stable-diffusion-webui-wd14-tagger)
 
-## install
+## install (venv)
 
 ```
 python -m venv venv
@@ -9,7 +9,17 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## usage
+## install (docker-compose)
+```
+services:
+  wd14-tagger-standalone:
+    build: ./wd14-tagger-standalone
+    ports:
+      - "8001:8001"
+    gpus: all
+```
+
+## usage (Command Line)
 
 ```
 usage: run.py [-h] (--dir DIR | --file FILE) [--threshold THRESHOLD] [--ext EXT] [--overwrite] [--cpu] [--rawtag] [--recursive] [--exclude-tag t1,t2,t3] [--model MODELNAME]
@@ -41,6 +51,14 @@ batch execution
 
 ```
 python run.py --dir dir/dir
+```
+
+## usage (WebUI)
+
+Note: The WebUI only support model wd-v1-4-convnext-tagger.v3 now
+
+```
+uvicorn app:app --host 0.0.0.0 --port 8001
 ```
 
 ## Support Models
